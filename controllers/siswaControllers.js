@@ -1,27 +1,67 @@
-const User = require('../models/user');
+const { siswa, user, menu, transaksi, detail_transaksi, menu_diskon, diskon } = require('../models');
 const md5 = require('md5')
-const Op = require('sequelize').Op
+const { Op } = require('sequelize').Op
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 //resgistrasi 
-exports.registerUser = async (req, res) => {
+exports.registerSiswa = async (req, res) => {
     try {
-        const { username, password, role } = req.body;
-        const user = await Users.create({ username, password, role });
-        res.status(201).json({ message: 'User Berhasil Registrasi', data: user });
+        const { username, password, nama_siswa, alamat, telp, foto } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUSer = await user.create({
+            username,
+            password: hashedPassword,
+            role: 'siswa',
+        });
+
+        const newSiswa = await siswa.create({
+            nama_siswa,
+            alamat,
+            telp,
+            userID: newUSer.userID,
+            foto
+        });
+
+        res.status(201).json({ message: 'siswa registeres succeddfully', data: newSiswa });
     } catch (error) {
-        res.status(500).json({ message: 'Error Saat Registrasi User', error })
+        res.status(500).json({ error: error.message });
     }
 };
 
 //login
-exports.loginUser = async (req, res) => {
+exports.loginSiswa = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const user = await Users.findOne({ where: { username, password } });
-        if (!user) return res.status(401).json({ message: 'Username atau password salah' });
-        res.status(200).json({ message: 'Login Berhasil', data: user });
+
+        // Cari user berdasarkan username dan role
+        const foundUser = await user.findOne({ where: { username } });
+        if (!foundUser || foundUser.role !== 'siswa') {
+            return res.status(404).json({ message: 'User not found or not a siswa' });
+        }
+
+        // Validasi password
+        const isPasswordValid = await bcrypt.compare(password, foundUser.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        // Generate token dengan payload berisi siswaID dan role
+        const token = jwt.sign(
+            { siswaID: foundUser.userID, role: foundUser.role },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '1d' }
+        );
+
+        // Kirim respons sukses dengan token
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Error Saat Login', error })
+        console.error(error);
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -36,24 +76,28 @@ exports.getAllUser = async (req, res) => {
 };
 
 //update 
-exports.updateUser = async (req, res) => {
+exports.updateSiswa = async (req, res) => {
     try {
-        const { userID } = req.params;
-        const { username, password, role } = req.body;
-        await Users.update({ username, password, role }, { where: { userID } });
-        res.status(200).json({ message: 'User berhasil diupdate' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error saat mengupdate user', error });
-    }
-};
+        const { siswaID } = req.params; // Ambil ID siswa dari parameter URL
+        const { nama_siswa, alamat, telp, foto } = req.body;
 
-//delete
-exports.deleteUser = async (req, res) => {
-    try {
-        const { userID } = req.params;
-        await Users.destroy({ where: { userID } });
-        res.status(200).json({ message: 'User berhasil dihapus' });
+        // Cari siswa berdasarkan ID
+        const foundSiswa = await siswa.findOne({ where: { siswaID } });
+        if (!foundSiswa) {
+            return res.status(404).json({ message: 'Siswa not found' });
+        }
+
+        // Update data siswa
+        await foundSiswa.update({
+            nama_siswa: nama_siswa || foundSiswa.nama_siswa,
+            alamat: alamat || foundSiswa.alamat,
+            telp: telp || foundSiswa.telp,
+            foto: foto || foundSiswa.foto,
+        });
+
+        res.status(200).json({ message: 'Siswa updated successfully', data: foundSiswa });
     } catch (error) {
-        res.status(500).json({ message: 'Error saat menghapus user', error });
+        console.error(error);
+        res.status(500).json({ error: error.message });
     }
 };

@@ -16,14 +16,25 @@ module.exports = (sequelize, DataTypes) => {
   }
   siswa.init({
     siswaID: {
+      type: DataTypes.STRING,
       allowNull: false,
-      autoIncrementa: true,
+      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER
     },
-    nama_siswa: DataTypes.STRING,
+    nama_siswa: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     alamat: DataTypes.STRING,
     telp: DataTypes.STRING,
+    userID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "user",
+        key: "userID"
+      }
+    },
     foto: DataTypes.STRING
   }, {
     sequelize,

@@ -1,20 +1,14 @@
 const express = require('express');
 const app = express();
-const userController = require('../controllers/userControllers');
+const userControllers = require('../control/control-user');
+const auth = require('../auth/auth');
 
-// Route untuk registrasi user
-app.post('/register', userController.registerUser);
+app.post('/register', userControllers.registerUser);
+app.post('/login', userControllers.loginUser);
+app.put('/update-profile', auth.authVerify, userControllers.updateProfile);
+app.get('/customers', auth.authVerify, userControllers.getCustomers);
+app.post('/customers', auth.authVerify, userControllers.addCustomer);
+app.put('/customers/:id', auth.authVerify, userControllers.updateCustomer);
+app.delete('/customers/:id', auth.authVerify, userControllers.deleteCustomer);
 
-// Route untuk login user
-app.post('/login', userController.loginUser);
-
-// Route untuk mendapatkan semua user
-app.get('/', userController.getAllUsers);
-
-// Route untuk memperbarui user
-app.put('/:userID', userController.updateUser);
-
-// Route untuk menghapus user
-app.delete('/:userID', userController.deleteUser);
-
-module.exports = router;
+module.exports = app;

@@ -1,28 +1,30 @@
-const express = require("express") // memanggil library express js
-const bodyParser = require("body-parser") // memanggil library body-parser
-const PORT = 7000
-const cors = require("cors") // memanggil library cors
-const app = express() //implementasi express
+const PORT = 8765
+const express = require('express')
+const app = express()
+const cors = require('cors')
+const bodyParser = require('body-parser')
 
-app.use(bodyParser.json())
-// penggunaan body-parser untuk ekstrak data request dari body
-app.use(bodyParser.urlencoded({ extended: true }))
-// penggunaan cors agar end point dapat diakses oleh cross platform
+const siswaRoute = require(`./routes/siswaRoutes`)
+// const stanRoute = require(./routes/routes - stan)
+// const menuRoute = require(./routes/routes - menu)
+// const diskonRoute = require(./routes/diskon.routes)
+
 app.use(cors())
+app.use(express.static(__dirname))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
-app.get("/test", (req, res) => {
-    // req merupakan variabel yang berisi data request
-    // res merupakan variabel yang berisi data response dari end-point
-    // membuat objek yang berisi data yang akan dijadikan response
-    let response = {
-        message: "Ini end-point pertama ku", // menampilkan data
-        method: req.method, // menampilkan method
-        code: res.statusCode // menampilkan response code
-    }
-    // memberikan response dengan format JSON yang berisi objek di atas
-    res.json(response)
-})
-// menjalankan server pada port 8000
+app.use('/siswa', siswaRoute)
+// app.use('/stan', stanRoute)
+// app.use('/menu', menuRoute)
+// app.use('/diskon', diskonRoute)
+
+
+
 app.listen(PORT, () => {
-    console.log(`Server run on port ${PORT}`);
+    console.log(`Server of kantin runs on port ${PORT}`)
 })
+
+app.use((req, res, next) => {
+    res.status(404).send('Endpoint nya gaada');
+});

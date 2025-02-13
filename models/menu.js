@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.menudiskon, { foreignKey: 'menudiskonID', as: 'menus' });
+      // this.belongsTo(models.menudiskon, { foreignKey: 'menudiskonID', as: 'menudiskons' });
     }
   }
   menu.init({

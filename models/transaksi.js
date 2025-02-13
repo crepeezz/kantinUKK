@@ -11,10 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'stanID', // Relasi dengan stan
         as: 'stan'
       });
-      this.hasMany(models.detailtransaksi, {
-        foreignKey: 'detailtransaksiID', // Relasi dengan detailtransaksi
-        as: 'detail_transaksis'
-      });
+      // this.hasMany(models.detailtransaksi, {
+      //   foreignKey: 'detailtransaksiID', // Relasi dengan detailtransaksi
+      //   as: 'detail_transaksis'
+      // });
     }
   }
   transaksi.init({
